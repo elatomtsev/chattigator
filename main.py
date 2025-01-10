@@ -14,7 +14,8 @@ db = DateBase("database.db")
 async def ping_all(message: Message):
     text = []
     for id, telegram, fullname, username in db.select_data():
-        if fullname == "CHATTIGATOR":
+        # Не отмечать бота
+        if telegram == bot.id:
             continue
         text.append(f"[{fullname}](tg://user?id={telegram})")
 
