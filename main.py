@@ -32,8 +32,7 @@ async def any_messages(message: Message):
     for data in db.select_data(["telegram"]):
         if message.from_user.id in data:
             db.update_data(
-                "telegram",
-                message.from_user.id,
+                telegram=message.from_user.id,
                 fullname=message.from_user.full_name,
                 username=message.from_user.username,
             )
