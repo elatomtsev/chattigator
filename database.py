@@ -44,14 +44,18 @@ class DateBase:
         self.cursor.execute(req)
         return self.cursor.fetchall()
 
-    def update_data(self, key_name, key_data, **kwargs: str):
+    def update_data(self, **kwargs: str):
         self.open_table()
 
         # Формируеи строку замены
-        new_data = ", ".join([f"{column} = ?" for column in kwargs.keys()])
+        new_data = ", ".join([f"{column} = ?" for column in list(kwargs.keys())[1:]])
+        # Сохраняем название колонки и данные, которые надо заменить
+        name_column, need_data = list(kwargs.items())[0]
 
-        req = f"UPDATE {self.name_table} SET {new_data} WHERE {key_name} = {key_data}"
-        self.cursor.execute(req, tuple(kwargs.values()))
+        req = (
+            f"UPDATE {self.name_table} SET {new_data} WHERE {name_column} = {need_data}"
+        )
+        self.cursor.execute(req, tuple(kwargs.values())[1:])
 
         self.close_table()
 
