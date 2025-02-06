@@ -11,9 +11,16 @@ db = DateBase("database.db")
 
 
 def check_exist_data(name_table: str, message: Message, column: list[str]) -> bool:
+    # Если проверяется таблица с чатами, то искать айди чата, если таблица с участниками, то искать айди участника
+    id = (
+        message.from_user.id
+        if str(message.chat.id).strip("-") in name_table
+        else message.chat.id
+    )
+
     # Извлекаем все telegram_id и ищем есть необходимый
     for telegram in db.select_data(name_table, ["telegram"]):
-        if message.chat.id in telegram:
+        if id in telegram:
             return True
     return False
 
