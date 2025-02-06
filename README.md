@@ -1,4 +1,4 @@
-# CHATTIGATOR
+# CHATTIGATOR (t.me/chattigator_bot)
 *Бот, помогающий в переписке*
 
 Доступные функции:
