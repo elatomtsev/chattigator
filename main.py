@@ -12,11 +12,7 @@ db = DateBase("database.db")
 
 def check_exist_data(name_table: str, message: Message, column: list[str]) -> bool:
     # Если проверяется таблица с чатами, то искать айди чата, если таблица с участниками, то искать айди участника
-    id = (
-        message.from_user.id
-        if str(message.chat.id).strip("-") in name_table
-        else message.chat.id
-    )
+    id = message.from_user.id if str(message.chat.id).strip("-") in name_table else message.chat.id
 
     # Извлекаем все telegram_id и ищем есть необходимый
     for telegram in db.select_data(name_table, ["telegram"]):
@@ -33,10 +29,7 @@ async def ping_all(message: Message):
     # Сюда будем складывать строки с ссылками на участников для их отметки
     text = []
 
-    for id, telegram, fullname, username in db.select_data(chat_id):
-        # Не отмечать бота
-        if telegram == bot.id:
-            continue
+    for id, telegram, fullname, username, cnt_messages in db.select_data(chat_id):
         text.append(f"[{fullname}](tg://user?id={telegram})")
 
     # Отмечаем всех участников
@@ -47,8 +40,25 @@ async def ping_all(message: Message):
     await bot.pin_chat_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
+@dp.message(Command(commands="stat"))
+async def stat_messages(message: Message):
+    # Добавляем chat к telegram_id, удалив минус, потому что sqlite не позволяет создать таблицу, где есть число и минус
+    chat_id = "chat" + str(message.chat.id).strip("-")
+
+    text = ["*Статистика отправленных сообщений:*"]
+
+    for fullname, cnt_messages in db.select_data(chat_id, ["fullname", "cnt_messages"]):
+        text.append(f"{fullname} - {cnt_messages}")
+
+    await message.reply(text="\n".join(text), parse_mode="Markdown")
+
+
 @dp.message()
 async def any_message(message: Message):
+    # Не отмечать бота
+    if message.from_user.id == bot.id:
+        return False
+
     # Добавляем chat к telegram_id, удалив минус, потому что sqlite не позволяет создать таблицу, где есть число и минус
     chat_id = "chat" + str(message.chat.id).strip("-")
 
@@ -59,6 +69,7 @@ async def any_message(message: Message):
         telegram="INTEGER",
         fullname="TEXT",
         username="TEXT",
+        cnt_messages="INTEGER",
     )
 
     # Если чат уже есть в таблице, то обновляем данные (может быть, что-то изменилось)
@@ -84,13 +95,17 @@ async def any_message(message: Message):
             telegram=message.from_user.id,
             fullname=message.from_user.full_name,
             username=message.from_user.username,
+            cnt_messages=0,
         )
     else:
+        # Узнаём количество отправленных сообщений и обновляем данные, прибавив 1
+        cnt = db.select_data(chat_id, ["cnt_messages"], telegram=message.from_user.id)[0][0]
         db.update_data(
             chat_id,
             telegram=message.from_user.id,
             fullname=message.from_user.full_name,
             username=message.from_user.username,
+            cnt_messages=cnt + 1,
         )
 
 
