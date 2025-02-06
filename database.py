@@ -10,6 +10,7 @@ class DateBase:
         # Подключаеися к БД
         self.connection = sqlite3.connect(self.name_db)
         self.cursor = self.connection.cursor()
+        self.connection.commit()
 
     def create_table(self, name_table: str, **column: str):
         self.name_table = name_table
@@ -20,10 +21,9 @@ class DateBase:
         # Создаем таблицу, если она не создана
         req = f"""CREATE TABLE IF NOT EXISTS {self.name_table} (\n{cols})"""
         self.cursor.execute(req)
+        self.connection.commit()
 
     def insert_data(self, **row: str):
-        self.open_table()
-
         # Формируем строчку
         names = ", ".join(row.keys())
         values = ", ".join(["?" for i in range(len(row.values()))])
@@ -31,22 +31,22 @@ class DateBase:
         # Добавляем данные: тг айди, полное имя, юзернейм
         req = f"INSERT INTO {self.name_table} ({names}) VALUES ({values})"
         self.cursor.execute(req, tuple(row.values()))
-        self.close_table()
+
+        self.connection.commit()
 
     def select_data(self, column: list[str] = "*"):
-        self.open_table()
-
         # Выбираем колонки, которые будем парсить
         column = ", ".join(column)
 
         # Возвращаем данные
         req = f"SELECT {column} from {self.name_table}"
         self.cursor.execute(req)
+
+        self.connection.commit()
+
         return self.cursor.fetchall()
 
     def update_data(self, **kwargs: str):
-        self.open_table()
-
         # Формируеи строку замены
         new_data = ", ".join([f"{column} = ?" for column in list(kwargs.keys())[1:]])
         # Сохраняем название колонки и данные, которые надо заменить
@@ -57,7 +57,7 @@ class DateBase:
         )
         self.cursor.execute(req, tuple(kwargs.values())[1:])
 
-        self.close_table()
+        self.connection.commit()
 
     def close_table(self):
         self.connection.commit()

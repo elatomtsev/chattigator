@@ -29,7 +29,9 @@ async def ping_all(message: Message):
 
 @dp.message()
 async def any_messages(message: Message):
+    # Извлекаем телеграм айди из таблицы
     for data in db.select_data(["telegram"]):
+        # Если сообщение от существующего участника, то обновляем информацию
         if message.from_user.id in data:
             db.update_data(
                 telegram=message.from_user.id,
@@ -37,6 +39,7 @@ async def any_messages(message: Message):
                 username=message.from_user.username,
             )
             break
+    # Если новый участник (первое сообщение), то добавляем в таблицу
     else:
         db.insert_data(
             telegram=message.from_user.id,
