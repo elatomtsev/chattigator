@@ -13,7 +13,7 @@ class DateBase:
         self.connection.commit()
 
     def create_table(self, name_table: str, **column: str):
-        #self.name_table = name_table
+        # self.name_table = name_table
 
         # Добавляем колонки с именем и типом
         cols = ",\n".join([f"{name} {type}" for name, type in column.items()])
@@ -34,12 +34,16 @@ class DateBase:
 
         self.connection.commit()
 
-    def select_data(self, name_table: str, column: list[str] = "*"):
+    def select_data(self, name_table: str, column: list[str] = "*", **kwargs: str):
+        where = ""
+        if kwargs != {}:
+            where = f' WHERE {list(kwargs.keys())[0]} = "{list(kwargs.values())[0]}"'
+
         # Выбираем колонки, которые будем парсить
         column = ", ".join(column)
 
         # Возвращаем данные
-        req = f"SELECT {column} from {name_table}"
+        req = f"SELECT {column} from {name_table}" + where
         self.cursor.execute(req)
 
         self.connection.commit()
@@ -52,9 +56,7 @@ class DateBase:
         # Сохраняем название колонки и данные, которые надо заменить
         name_column, need_data = list(kwargs.items())[0]
 
-        req = (
-            f"UPDATE {name_table} SET {new_data} WHERE {name_column} = {need_data}"
-        )
+        req = f"UPDATE {name_table} SET {new_data} WHERE {name_column} = {need_data}"
         self.cursor.execute(req, tuple(kwargs.values())[1:])
 
         self.connection.commit()
