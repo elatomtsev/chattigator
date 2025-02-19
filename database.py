@@ -35,15 +35,15 @@ class DateBase:
         self.connection.commit()
 
     def select_data(self, name_table: str, column: list[str] = "*", where: str = "", order: str = ""):
-        if where != "": where = " WHERE " + where
-        if order != "": order = " ORDER BY " + order + " DESC"
+        if where: where = " WHERE " + where
+        if order: order = " ORDER BY " + order + " DESC"
 
         # Выбираем колонки, которые будем парсить
         column = ", ".join(column)
 
         # Возвращаем данные
         req = f"SELECT {column} from {name_table}" + where + order
- 
+
         self.cursor.execute(req)
 
         self.connection.commit()
