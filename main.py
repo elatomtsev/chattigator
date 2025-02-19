@@ -14,8 +14,8 @@ def check_exist_data(name_table: str, message: Message, column: list[str]) -> bo
     # Если проверяется таблица с чатами, то искать айди чата, если таблица с участниками, то искать айди участника
     id = message.from_user.id if str(message.chat.id).strip("-") in name_table else message.chat.id
 
-    # Извлекаем все telegram_id и ищем есть необходимый
-    for telegram in db.select_data(name_table, ["telegram"]):
+    # Извлекаем все telegram_id и ищем необходимый
+    for telegram in db.select_data(name_table, column):
         if id in telegram:
             return True
     return False
@@ -29,7 +29,7 @@ async def ping_all(message: Message):
     # Сюда будем складывать строки с ссылками на участников для их отметки
     text = []
 
-    for id, telegram, fullname, username, cnt_messages in db.select_data(chat_id):
+    for id, telegram, fullname, *other in db.select_data(chat_id):
         text.append(f"[{fullname}](tg://user?id={telegram})")
 
     # Отмечаем всех участников
@@ -47,7 +47,7 @@ async def stat_messages(message: Message):
 
     text = ["*Статистика отправленных сообщений:*"]
 
-    for fullname, cnt_messages in db.select_data(chat_id, ["fullname", "cnt_messages"]):
+    for fullname, cnt_messages in db.select_data(chat_id, ["fullname", "cnt_messages"], order=f"cnt_messages"):
         text.append(f"{fullname} - {cnt_messages}")
 
     await message.reply(text="\n".join(text), parse_mode="Markdown")
@@ -99,7 +99,7 @@ async def any_message(message: Message):
         )
     else:
         # Узнаём количество отправленных сообщений и обновляем данные, прибавив 1
-        cnt = db.select_data(chat_id, ["cnt_messages"], telegram=message.from_user.id)[0][0]
+        cnt = db.select_data(chat_id, ["cnt_messages"], f"telegram = {message.from_user.id}")[0][0]
         db.update_data(
             chat_id,
             telegram=message.from_user.id,
