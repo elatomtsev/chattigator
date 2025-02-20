@@ -53,7 +53,8 @@ async def stat_messages(message: Message):
     await message.reply(text="\n".join(text), parse_mode="Markdown")
 
 
-@dp.message()
+# Исключаем сообещения от бота и группы (например, когда начинается видеочат)
+@dp.message(lambda message: message.from_user.is_bot == False)
 async def any_message(message: Message):
     # Не отмечать бота
     if message.from_user.id == bot.id:
