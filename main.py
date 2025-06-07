@@ -21,7 +21,7 @@ def check_exist_data(name_table: str, message: Message, column: list[str]) -> bo
     return False
 
 
-@dp.message(Command(commands="all", prefix=["@", "/"]))
+@dp.message(Command(commands=["all", "все"], prefix=["@", "/"]))
 async def ping_all(message: Message):
     # Добавляем chat к telegram_id, удалив минус, потому что sqlite не позволяет создать таблицу, где есть число и минус
     chat_id = "chat" + str(message.chat.id).strip("-")
@@ -40,7 +40,7 @@ async def ping_all(message: Message):
     await bot.pin_chat_message(chat_id=message.chat.id, message_id=message.message_id)
 
 
-@dp.message(Command(commands="stat"))
+@dp.message(Command(commands=["stat", "стат"]))
 async def stat_messages(message: Message):
     # Добавляем chat к telegram_id, удалив минус, потому что sqlite не позволяет создать таблицу, где есть число и минус
     chat_id = "chat" + str(message.chat.id).strip("-")
