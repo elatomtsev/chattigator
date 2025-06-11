@@ -53,6 +53,19 @@ async def stat_messages(message: Message):
     await message.reply(text="\n".join(text), parse_mode="Markdown")
 
 
+@dp.message(Command(commands=["help", "помощь"]))
+async def help_command(message: Message):
+    text = [
+        "Бот предназначен для оповещения всех участников и отслеживания их активности. В скобках указаны аналогичные команды. \n",
+        "*Список доступных комманд:*",
+        "/help - Получить информацию о боте (/помощь)",
+        "/all - Отметить всех участников (@all, @все, /все)",
+        "/stat - Получить статистику отправленных сообщений (/стат)",
+    ]
+
+    await message.reply(text="\n".join(text), parse_mode="Markdown")
+
+
 # Исключаем сообещения от бота и группы (например, когда начинается видеочат)
 @dp.message(lambda message: message.from_user.is_bot == False)
 async def any_message(message: Message):
